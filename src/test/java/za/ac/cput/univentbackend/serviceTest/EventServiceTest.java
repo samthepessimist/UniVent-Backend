@@ -10,6 +10,7 @@ import za.ac.cput.domain.Event;
 import za.ac.cput.repository.EventRepository;
 import za.ac.cput.service.EventService;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -29,9 +30,10 @@ public class EventServiceTest {
     public void testCreateEvent() {
 
         Event event = new Event.Builder()
+                .setEventId("evt-1")
                 .setName("Tech Talk")
                 .setDescription("Java Workshop")
-                .setDateTime("2026-08-15T10:00:00")
+                .setDateTime(LocalDateTime.of(2026, 8, 15, 10, 0))
                 .setMaxAttendees(100)
                 .build();
 
@@ -50,13 +52,14 @@ public class EventServiceTest {
     public void testReadEvent() {
 
         Event event = new Event.Builder()
+                .setEventId("evt-1")
                 .setName("Tech Talk")
                 .setDescription("Java Workshop")
                 .build();
 
-        when(repository.findById(1)).thenReturn(Optional.of(event));
+        when(repository.findById("evt-1")).thenReturn(Optional.of(event));
 
-        Event result = service.read(1);
+        Event result = service.read("evt-1");
 
         assertNotNull(result);
         assertEquals("Tech Talk", result.getName());
@@ -69,6 +72,7 @@ public class EventServiceTest {
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
         Event updated = new Event.Builder()
+                .setEventId("evt-1")
                 .setName("Updated Event")
                 .setDescription("Updated Description")
                 .build();
@@ -83,11 +87,11 @@ public class EventServiceTest {
     @Test
     public void testDeleteEvent() {
 
-        doNothing().when(repository).deleteById(1);
+        doNothing().when(repository).deleteById("evt-1");
 
-        service.delete(1);
+        service.delete("evt-1");
 
-        verify(repository).deleteById(1);
+        verify(repository).deleteById("evt-1");
     }
 
     @Test
@@ -99,11 +103,10 @@ public class EventServiceTest {
     @Test
     public void testReadEventReturnsNull() {
 
-        when(repository.findById(99)).thenReturn(Optional.empty());
+        when(repository.findById("missing")).thenReturn(Optional.empty());
 
-        Event result = service.read(99);
+        Event result = service.read("missing");
 
         assertNull(result);
     }
 }
-

@@ -10,6 +10,8 @@ import za.ac.cput.controller.EventController;
 import za.ac.cput.domain.Event;
 import za.ac.cput.service.EventService;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,9 +29,10 @@ public class EventControllerTest {
     public void testCreateEvent() {
 
         Event event = new Event.Builder()
+                .setEventId("evt-1")
                 .setName("Tech Talk")
                 .setDescription("Java Workshop")
-                .setDateTime("2026-08-15T10:00:00")
+                .setDateTime(LocalDateTime.of(2026, 8, 15, 10, 0))
                 .setMaxAttendees(100)
                 .build();
 
@@ -49,25 +52,27 @@ public class EventControllerTest {
     public void testGetEventById() {
 
         Event event = new Event.Builder()
+                .setEventId("evt-1")
                 .setName("Tech Talk")
                 .setDescription("Java Workshop")
                 .build();
 
-        when(service.read(1)).thenReturn(event);
+        when(service.read("evt-1")).thenReturn(event);
 
-        ResponseEntity<Event> response = controller.getEventById(1);
+        ResponseEntity<Event> response = controller.getEventById("evt-1");
 
         assertNotNull(response);
         assertNotNull(response.getBody());
         assertEquals("Tech Talk", response.getBody().getName());
 
-        verify(service).read(1);
+        verify(service).read("evt-1");
     }
 
     @Test
     public void testUpdateEvent() {
 
         Event event = new Event.Builder()
+                .setEventId("evt-1")
                 .setName("Updated Event")
                 .setDescription("Updated Description")
                 .build();
@@ -87,11 +92,11 @@ public class EventControllerTest {
     @Test
     public void testDeleteEvent() {
 
-        ResponseEntity<Void> response = controller.deleteEvent(1);
+        ResponseEntity<Void> response = controller.deleteEvent("evt-1");
 
         assertNotNull(response);
         assertEquals(204, response.getStatusCode().value());
 
-        verify(service).delete(1);
+        verify(service).delete("evt-1");
     }
 }

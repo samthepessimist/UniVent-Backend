@@ -2,9 +2,12 @@ package za.ac.cput.univentbackend.factoryTest;
 
 import org.junit.jupiter.api.Test;
 import za.ac.cput.domain.Event;
+import za.ac.cput.domain.EventStatusEnum;
 import za.ac.cput.domain.Organizer;
 import za.ac.cput.domain.Venue;
 import za.ac.cput.factory.EventFactory;
+
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
@@ -13,6 +16,7 @@ public class EventFactoryTest {
 
     private final Organizer organizer = mock(Organizer.class);
     private final Venue venue = mock(Venue.class);
+    private final LocalDateTime dateTime = LocalDateTime.of(2026, 8, 15, 10, 0);
 
     @Test
     public void shouldCreateValidEvent() {
@@ -20,17 +24,21 @@ public class EventFactoryTest {
         Event event = EventFactory.createEvent(
                 "Tech Talk",
                 "Java Workshop",
-                "2026-08-15T10:00:00",
+                dateTime,
                 100,
                 organizer,
                 venue
         );
 
         assertNotNull(event);
+        assertFalse(event.getEventId().isEmpty());
         assertEquals("Tech Talk", event.getName());
         assertEquals("Java Workshop", event.getDescription());
-        assertEquals("2026-08-15T10:00:00", event.getDateTime());
+        assertEquals(dateTime, event.getDateTime());
         assertEquals(100, event.getMaxAttendees());
+        assertEquals(EventStatusEnum.PENDING_APPROVAL, event.getStatus());
+        assertFalse(event.isAvailable());
+        assertNotNull(event.getCreatedAt());
         assertEquals(organizer, event.getOrganizer());
         assertEquals(venue, event.getVenue());
     }
@@ -42,7 +50,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "",
                         "Java Workshop",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         100,
                         organizer,
                         venue));
@@ -57,7 +65,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "   ",
                         "Java Workshop",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         100,
                         organizer,
                         venue));
@@ -72,7 +80,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         100,
                         organizer,
                         venue));
@@ -87,7 +95,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "   ",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         100,
                         organizer,
                         venue));
@@ -102,7 +110,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "Java Workshop",
-                        "",
+                        null,
                         100,
                         organizer,
                         venue));
@@ -117,7 +125,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "Java Workshop",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         0,
                         organizer,
                         venue));
@@ -132,7 +140,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "Java Workshop",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         -10,
                         organizer,
                         venue));
@@ -147,7 +155,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "Java Workshop",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         100,
                         null,
                         venue));
@@ -162,7 +170,7 @@ public class EventFactoryTest {
                 EventFactory.createEvent(
                         "Tech Talk",
                         "Java Workshop",
-                        "2026-08-15T10:00:00",
+                        dateTime,
                         100,
                         organizer,
                         null));
@@ -170,4 +178,3 @@ public class EventFactoryTest {
         assertEquals("Venue is required", exception.getMessage());
     }
 }
-

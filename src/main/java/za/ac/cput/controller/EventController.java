@@ -5,6 +5,8 @@ import org.springframework.web.bind.annotation.*;
 import za.ac.cput.domain.Event;
 import za.ac.cput.service.EventService;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
@@ -15,6 +17,11 @@ public class EventController {
         this.eventService = eventService;
     }
 
+    @GetMapping
+    public ResponseEntity<List<Event>> getUpcomingEvents() {
+        return ResponseEntity.ok(eventService.getUpcomingEvents());
+    }
+
     @PostMapping
     public ResponseEntity<Event> createEvent(@RequestBody Event event) {
         Event createdEvent = eventService.create(event);
@@ -22,7 +29,7 @@ public class EventController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Event> getEventById(@PathVariable Integer id) {
+    public ResponseEntity<Event> getEventById(@PathVariable String id) {
         Event event = eventService.read(id);
         return ResponseEntity.ok(event);
     }
@@ -33,10 +40,21 @@ public class EventController {
         return ResponseEntity.ok(updatedEvent);
     }
 
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<Event> cancelEvent(@PathVariable String id,
+                                             @RequestParam String organizerId) {
+        Event cancelled = eventService.cancelEvent(id, organizerId);
+        return ResponseEntity.ok(cancelled);
+    }
+
+    @GetMapping("/{id}/capacity")
+    public ResponseEntity<Boolean> hasCapacity(@PathVariable String id) {
+        return ResponseEntity.ok(eventService.hasCapacity(id));
+    }
+
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteEvent(@PathVariable Integer id) {
+    public ResponseEntity<Void> deleteEvent(@PathVariable String id) {
         eventService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }
-
