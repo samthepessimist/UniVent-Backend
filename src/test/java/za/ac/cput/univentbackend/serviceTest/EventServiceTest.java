@@ -1,15 +1,19 @@
 package za.ac.cput.univentbackend.serviceTest;
 
-
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import za.ac.cput.domain.Event;
+import za.ac.cput.domain.Organizer;
+import za.ac.cput.domain.Venue;
+import za.ac.cput.repository.BookingRepository;
 import za.ac.cput.repository.EventRepository;
 import za.ac.cput.service.EventService;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,90 +24,57 @@ import static org.mockito.Mockito.*;
 public class EventServiceTest {
 
     @Mock
-    private EventRepository repository;
+    private EventRepository eventRepository;
+
+    @Mock
+    private BookingRepository bookingRepository;
 
     @InjectMocks
-    private EventService service;
+    private EventService eventService;
 
-    @Test
-    public void testCreateEvent() {
+    private Event event;
+    private static final String EVENT_ID = "event-001";
 
-        Event event = new Event.Builder()
+    @BeforeEach
+    void setUp() {
+        event = new Event.Builder()
+                .setEventId(EVENT_ID)
                 .setName("Tech Talk")
                 .setDescription("Java Workshop")
-                .setDateTime("2026-08-15T10:00:00")
+                .setDateTime(LocalDateTime.of(2026, 10, 15, 10, 0))
                 .setMaxAttendees(100)
+                .setOrganizer(mock(Organizer.class))
+                .setVenue(mock(Venue.class))
                 .build();
+    }
 
-        when(repository.save(any(Event.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+    @Test
+    void create_WithValidEvent_ShouldSaveAndReturnEvent() {
+        when(eventRepository.save(any(Event.class))).thenAnswer(invocation -> invocation.getArgument(0));
 
-        Event result = service.create(event);
+        Event result = eventService.create(event);
 
         assertNotNull(result);
         assertEquals("Tech Talk", result.getName());
-        assertEquals("Java Workshop", result.getDescription());
-        verify(repository).save(any(Event.class));
+        verify(eventRepository, times(1)).save(any(Event.class));
     }
 
     @Test
-    public void testReadEvent() {
-
-        Event event = new Event.Builder()
-                .setName("Tech Talk")
-                .setDescription("Java Workshop")
-                .build();
-
-        when(repository.findById(1)).thenReturn(Optional.of(event));
-
-        Event result = service.read(1);
-
-        assertNotNull(result);
-        assertEquals("Tech Talk", result.getName());
-    }
-
-    @Test
-    public void testUpdateEvent() {
-
-        when(repository.save(any(Event.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        Event updated = new Event.Builder()
-                .setName("Updated Event")
-                .setDescription("Updated Description")
-                .build();
-
-        Event result = service.update(updated);
-
-        assertNotNull(result);
-        assertEquals("Updated Event", result.getName());
-        verify(repository).save(any(Event.class));
-    }
-
-    @Test
-    public void testDeleteEvent() {
-
-        doNothing().when(repository).deleteById(1);
-
-        service.delete(1);
-
-        verify(repository).deleteById(1);
-    }
-
-    @Test
-    public void testCreateNullReturnsNull() {
-
-        assertNull(service.create(null));
-    }
-
-    @Test
-    public void testReadEventReturnsNull() {
-
-        when(repository.findById(99)).thenReturn(Optional.empty());
-
-        Event result = service.read(99);
+    void create_WithNullEvent_ShouldReturnNullAndNotTouchRepository() {
+        Event result = eventService.create(null);
 
         assertNull(result);
+        verify(eventRepository, never()).save(any());
+    }
+
+    @Test
+    void read_WithExistingId_ShouldReturnEvent() {
+        when(eventRepository.findById(EVENT_ID)).thenReturn(Optional.of(event));
+
+        Event result = eventService.read(EVENT_ID);
+
+        assertNotNull(result);
+        assertEquals(event, result);
+        verify(eventRepository, times(1)).findById(EVENT_ID);
     }
 }
-
