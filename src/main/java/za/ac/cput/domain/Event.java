@@ -2,6 +2,8 @@ package za.ac.cput.domain;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 /**Student name: Uyathandwa Ngomana
  * Student number: 231173229
  * Group: 3H
@@ -76,7 +78,6 @@ public class Event {
                 ", organizer=" + organizer +
                 ", venue=" + venue + '}';
     }
-
 
 
     public static class Builder {

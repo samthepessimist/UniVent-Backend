@@ -36,21 +36,10 @@ public class BookingController {
     }
 
     // Cancel a booking
-    @PutMapping("/{bookingReference}/cancel")
-    public ResponseEntity<?> cancelBooking(@PathVariable String bookingReference) {
+    @PutMapping("/{bookingId}/cancel")
+    public ResponseEntity<?> cancelBooking(@PathVariable String bookingId) {
         try {
-            Booking booking = bookingService.cancelBooking(bookingReference);
-            return ResponseEntity.ok(booking);
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        }
-    }
-
-    // Confirm a booking
-    @PutMapping("/{bookingReference}/confirm")
-    public ResponseEntity<?> confirmBooking(@PathVariable String bookingReference) {
-        try {
-            Booking booking = bookingService.confirmBooking(bookingReference);
+            Booking booking = bookingService.cancelBooking(bookingId);
             return ResponseEntity.ok(booking);
         } catch (IllegalStateException | IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -58,23 +47,11 @@ public class BookingController {
     }
 
     // Get booking by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<?> getBookingById(@PathVariable Integer id) {
+    @GetMapping("/{bookingId}")
+    public ResponseEntity<?> getBookingById(@PathVariable String bookingId) {
         try {
-            Booking booking = bookingService.getBookingById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + id));
-            return ResponseEntity.ok(booking);
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
-    }
-
-    // Get booking by reference
-    @GetMapping("/reference/{bookingReference}")
-    public ResponseEntity<?> getBookingByReference(@PathVariable String bookingReference) {
-        try {
-            Booking booking = bookingService.getBookingByReference(bookingReference)
-                    .orElseThrow(() -> new IllegalArgumentException("Booking not found with reference: " + bookingReference));
+            Booking booking = bookingService.getBookingById(bookingId)
+                    .orElseThrow(() -> new IllegalArgumentException("Booking not found with id: " + bookingId));
             return ResponseEntity.ok(booking);
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -89,20 +66,18 @@ public class BookingController {
     }
 
     // Get bookings by student
+    // TODO: this still needs a StudentService injected to fetch the real Student
+    // by ID before calling bookingService.getBookingsByStudent(...) -- passing
+    // null will NOT work at runtime, it's left as a placeholder like your original.
     @GetMapping("/student/{studentId}")
-    public ResponseEntity<?> getBookingsByStudent(@PathVariable Integer studentId) {
-        // You would need to fetch the student from StudentService
-        // This is a placeholder - you'll need to inject StudentService
-        // and fetch the student by ID first
+    public ResponseEntity<?> getBookingsByStudent(@PathVariable String studentId) {
         return ResponseEntity.ok(bookingService.getBookingsByStudent(null));
     }
 
     // Get bookings by event
+    // TODO: same as above -- needs EventService injected to fetch the real Event.
     @GetMapping("/event/{eventId}")
-    public ResponseEntity<?> getBookingsByEvent(@PathVariable Integer eventId) {
-        // You would need to fetch the event from EventService
-        // This is a placeholder - you'll need to inject EventService
-        // and fetch the event by ID first
+    public ResponseEntity<?> getBookingsByEvent(@PathVariable String eventId) {
         return ResponseEntity.ok(bookingService.getBookingsByEvent(null));
     }
 
@@ -117,22 +92,11 @@ public class BookingController {
         }
     }
 
-    // Delete booking by reference
-    @DeleteMapping("/{bookingReference}")
-    public ResponseEntity<?> deleteBooking(@PathVariable String bookingReference) {
-        try {
-            bookingService.deleteBooking(bookingReference);
-            return ResponseEntity.noContent().build();
-        } catch (IllegalArgumentException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        }
-    }
-
     // Delete booking by ID
-    @DeleteMapping("/id/{id}")
-    public ResponseEntity<?> deleteBookingById(@PathVariable Integer id) {
+    @DeleteMapping("/{bookingId}")
+    public ResponseEntity<?> deleteBookingById(@PathVariable String bookingId) {
         try {
-            bookingService.deleteBookingById(id);
+            bookingService.deleteBookingById(bookingId);
             return ResponseEntity.noContent().build();
         } catch (IllegalArgumentException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
@@ -140,20 +104,19 @@ public class BookingController {
     }
 
     // Check if student has booked event
+    // TODO: needs StudentService + EventService injected to resolve the real
+    // Student and Event before calling hasStudentBookedEvent(...).
     @GetMapping("/exists")
     public ResponseEntity<?> hasStudentBookedEvent(
-            @RequestParam Integer studentId,
-            @RequestParam Integer eventId) {
-        // You would need to fetch student and event from their respective services
-        // This is a placeholder
+            @RequestParam String studentId,
+            @RequestParam String eventId) {
         return ResponseEntity.ok(bookingService.hasStudentBookedEvent(null, null));
     }
 
     // Get booking count for event
+    // TODO: needs EventService injected to resolve the real Event.
     @GetMapping("/count/event/{eventId}")
-    public ResponseEntity<?> getBookingCountForEvent(@PathVariable Integer eventId) {
-        // You would need to fetch the event from EventService
-        // This is a placeholder
+    public ResponseEntity<?> getBookingCountForEvent(@PathVariable String eventId) {
         return ResponseEntity.ok(bookingService.getBookingCountForEvent(null));
     }
 

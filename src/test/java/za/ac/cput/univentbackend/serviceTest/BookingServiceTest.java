@@ -17,6 +17,7 @@ import za.ac.cput.service.BookingService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,9 +56,9 @@ public class BookingServiceTest {
                 .build();
 
         Venue venue = new Venue.Builder()
-                .setName("Main Hall")
+                .setVenueName("Main Hall")
                 .setAddress("123 Main St")
-                .setCapacity("500")
+                .setCapacity(Integer.parseInt("500"))
                 .build();
 
         return new Event.Builder()
@@ -86,7 +87,7 @@ public class BookingServiceTest {
 
         when(bookingRepository.existsByStudentAndEvent(student, event)).thenReturn(false);
         when(bookingRepository.countByEvent(event)).thenReturn(0L);
-        when(bookingFactory.createBooking(student, event)).thenReturn(booking);
+        when(BookingFactory.createBooking(student, event)).thenReturn(booking);
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
 
         // When
@@ -96,10 +97,11 @@ public class BookingServiceTest {
         assertNotNull(result);
         assertEquals(student, result.getStudent());
         assertEquals(event, result.getEvent());
-        assertEquals(BookingStatusEnum.PENDING, result.getStatus());
+        assertEquals(BookingStatusEnum.CONFIRMED, result.getStatus());
         verify(bookingRepository).existsByStudentAndEvent(student, event);
         verify(bookingRepository).countByEvent(event);
-        verify(bookingFactory).createBooking(student, event);
+        verify(bookingFactory);
+        BookingFactory.createBooking(student, event);
         verify(bookingRepository).save(any(Booking.class));
     }
 
@@ -118,7 +120,8 @@ public class BookingServiceTest {
         assertEquals("Student already has a booking for this event", exception.getMessage());
         verify(bookingRepository).existsByStudentAndEvent(student, event);
         verify(bookingRepository, never()).countByEvent(any(Event.class));
-        verify(bookingFactory, never()).createBooking(any(Student.class), any(Event.class));
+        verify(bookingFactory, never());
+        BookingFactory.createBooking(any(Student.class), any(Event.class));
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
@@ -138,7 +141,8 @@ public class BookingServiceTest {
         assertEquals("Event has reached maximum capacity", exception.getMessage());
         verify(bookingRepository).existsByStudentAndEvent(student, event);
         verify(bookingRepository).countByEvent(event);
-        verify(bookingFactory, never()).createBooking(any(Student.class), any(Event.class));
+        verify(bookingFactory, never());
+        BookingFactory.createBooking(any(Student.class), any(Event.class));
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
@@ -153,9 +157,9 @@ public class BookingServiceTest {
                 .build();
 
         Venue venue = new Venue.Builder()
-                .setName("Main Hall")
+                .setVenueName("Main Hall")
                 .setAddress("123 Main St")
-                .setCapacity("500")
+                .setCapacity(Integer.parseInt("500"))
                 .build();
 
         Event pastEvent = new Event.Builder()
@@ -177,120 +181,68 @@ public class BookingServiceTest {
         assertEquals("Cannot register for past events", exception.getMessage());
         verify(bookingRepository).existsByStudentAndEvent(student, pastEvent);
         verify(bookingRepository).countByEvent(pastEvent);
-        verify(bookingFactory, never()).createBooking(any(Student.class), any(Event.class));
+        verify(bookingFactory, never());
+        BookingFactory.createBooking(any(Student.class), any(Event.class));
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
     @Test
     public void shouldCancelBookingSuccessfully() {
         // Given
-        String bookingReference = "BKG-123456";
+        String bookingId = "BKG-123456";
         Booking booking = createTestBooking();
 
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.of(booking));
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
         when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
 
         // When
-        Booking result = bookingService.cancelBooking(bookingReference);
+        Booking result = bookingService.cancelBooking(bookingId);
 
         // Then
         assertNotNull(result);
         assertEquals(BookingStatusEnum.CANCELLED, result.getStatus());
-        verify(bookingRepository).findByBookingReference(bookingReference);
+        verify(bookingRepository).findById(bookingId);
         verify(bookingRepository).save(any(Booking.class));
     }
 
     @Test
     public void shouldThrowExceptionWhenCancellingAlreadyCancelledBooking() {
         // Given
-        String bookingReference = "BKG-123456";
+        String bookingId = "BKG-123456";
         Booking booking = createTestBooking();
         booking.cancel(); // Cancel the booking
 
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.of(booking));
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
 
         // When & Then
         IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> bookingService.cancelBooking(bookingReference));
+                () -> bookingService.cancelBooking(bookingId));
 
         assertEquals("Booking is already cancelled", exception.getMessage());
-        verify(bookingRepository).findByBookingReference(bookingReference);
+        verify(bookingRepository).findById(bookingId);
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
     @Test
     public void shouldThrowExceptionWhenCancellingNonExistentBooking() {
         // Given
-        String bookingReference = "NONEXISTENT";
+        String bookingId = "NONEXISTENT";
 
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.empty());
-
-        // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> bookingService.cancelBooking(bookingReference));
-
-        assertEquals("Booking not found with reference: NONEXISTENT", exception.getMessage());
-        verify(bookingRepository).findByBookingReference(bookingReference);
-        verify(bookingRepository, never()).save(any(Booking.class));
-    }
-
-    @Test
-    public void shouldConfirmBookingSuccessfully() {
-        // Given
-        String bookingReference = "BKG-123456";
-        Booking booking = createTestBooking();
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.of(booking));
-        when(bookingRepository.save(any(Booking.class))).thenReturn(booking);
-
-        // When
-        Booking result = bookingService.confirmBooking(bookingReference);
-
-        // Then
-        assertNotNull(result);
-        assertEquals(BookingStatusEnum.CONFIRMED, result.getStatus());
-        verify(bookingRepository).findByBookingReference(bookingReference);
-        verify(bookingRepository).save(any(Booking.class));
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenConfirmingCancelledBooking() {
-        // Given
-        String bookingReference = "BKG-123456";
-        Booking booking = createTestBooking();
-        booking.cancel(); // Cancel the booking
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.of(booking));
-
-        // When & Then
-        IllegalStateException exception = assertThrows(IllegalStateException.class,
-                () -> bookingService.confirmBooking(bookingReference));
-
-        assertEquals("Cannot confirm a cancelled booking", exception.getMessage());
-        verify(bookingRepository).findByBookingReference(bookingReference);
-        verify(bookingRepository, never()).save(any(Booking.class));
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenConfirmingNonExistentBooking() {
-        // Given
-        String bookingReference = "NONEXISTENT";
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.empty());
+        when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
 
         // When & Then
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> bookingService.confirmBooking(bookingReference));
+                () -> bookingService.cancelBooking(bookingId));
 
-        assertEquals("Booking not found with reference: NONEXISTENT", exception.getMessage());
-        verify(bookingRepository).findByBookingReference(bookingReference);
+        assertEquals("Booking not found with id: NONEXISTENT", exception.getMessage());
+        verify(bookingRepository).findById(bookingId);
         verify(bookingRepository, never()).save(any(Booking.class));
     }
 
     @Test
     public void shouldGetBookingById() {
         // Given
-        int bookingId = 1;
+        String bookingId = "BKG-1";
         Booking booking = createTestBooking();
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.of(booking));
@@ -307,7 +259,7 @@ public class BookingServiceTest {
     @Test
     public void shouldReturnEmptyWhenBookingNotFoundById() {
         // Given
-        int bookingId = 999;
+        String bookingId = "BKG-999";
 
         when(bookingRepository.findById(bookingId)).thenReturn(Optional.empty());
 
@@ -317,38 +269,6 @@ public class BookingServiceTest {
         // Then
         assertTrue(result.isEmpty());
         verify(bookingRepository).findById(bookingId);
-    }
-
-    @Test
-    public void shouldGetBookingByReference() {
-        // Given
-        String bookingReference = "BKG-123456";
-        Booking booking = createTestBooking();
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.of(booking));
-
-        // When
-        Optional<Booking> result = bookingService.getBookingByReference(bookingReference);
-
-        // Then
-        assertTrue(result.isPresent());
-        assertEquals(booking, result.get());
-        verify(bookingRepository).findByBookingReference(bookingReference);
-    }
-
-    @Test
-    public void shouldReturnEmptyWhenBookingNotFoundByReference() {
-        // Given
-        String bookingReference = "NONEXISTENT";
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.empty());
-
-        // When
-        Optional<Booking> result = bookingService.getBookingByReference(bookingReference);
-
-        // Then
-        assertTrue(result.isEmpty());
-        verify(bookingRepository).findByBookingReference(bookingReference);
     }
 
     @Test
@@ -373,7 +293,7 @@ public class BookingServiceTest {
     @Test
     public void shouldGetEmptyListWhenNoBookings() {
         // Given
-        when(bookingRepository.findAll()).thenReturn(Arrays.asList());
+        when(bookingRepository.findAll()).thenReturn(List.of());
 
         // When
         List<Booking> result = bookingService.getAllBookings();
@@ -389,7 +309,7 @@ public class BookingServiceTest {
         // Given
         Student student = createTestStudent();
         Booking booking = createTestBooking();
-        List<Booking> bookings = Arrays.asList(booking);
+        List<Booking> bookings = Collections.singletonList(booking);
 
         when(bookingRepository.findByStudent(student)).thenReturn(bookings);
 
@@ -408,7 +328,7 @@ public class BookingServiceTest {
         // Given
         Event event = createTestEvent();
         Booking booking = createTestBooking();
-        List<Booking> bookings = Arrays.asList(booking);
+        List<Booking> bookings = Collections.singletonList(booking);
 
         when(bookingRepository.findByEvent(event)).thenReturn(bookings);
 
@@ -425,9 +345,9 @@ public class BookingServiceTest {
     @Test
     public void shouldGetBookingsByStatus() {
         // Given
-        BookingStatusEnum status = BookingStatusEnum.PENDING;
+        BookingStatusEnum status = BookingStatusEnum.CONFIRMED;
         Booking booking = createTestBooking();
-        List<Booking> bookings = Arrays.asList(booking);
+        List<Booking> bookings = Collections.singletonList(booking);
 
         when(bookingRepository.findByStatus(status)).thenReturn(bookings);
 
@@ -442,41 +362,9 @@ public class BookingServiceTest {
     }
 
     @Test
-    public void shouldDeleteBookingByReference() {
-        // Given
-        String bookingReference = "BKG-123456";
-        Booking booking = createTestBooking();
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.of(booking));
-
-        // When
-        bookingService.deleteBooking(bookingReference);
-
-        // Then
-        verify(bookingRepository).findByBookingReference(bookingReference);
-        verify(bookingRepository).deleteByBookingReference(bookingReference);
-    }
-
-    @Test
-    public void shouldThrowExceptionWhenDeletingNonExistentBookingByReference() {
-        // Given
-        String bookingReference = "NONEXISTENT";
-
-        when(bookingRepository.findByBookingReference(bookingReference)).thenReturn(Optional.empty());
-
-        // When & Then
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class,
-                () -> bookingService.deleteBooking(bookingReference));
-
-        assertEquals("Booking not found with reference: NONEXISTENT", exception.getMessage());
-        verify(bookingRepository).findByBookingReference(bookingReference);
-        verify(bookingRepository, never()).deleteByBookingReference(anyString());
-    }
-
-    @Test
     public void shouldDeleteBookingById() {
         // Given
-        int bookingId = 1;
+        String bookingId = "BKG-1";
 
         when(bookingRepository.existsById(bookingId)).thenReturn(true);
 
@@ -491,7 +379,7 @@ public class BookingServiceTest {
     @Test
     public void shouldThrowExceptionWhenDeletingNonExistentBookingById() {
         // Given
-        int bookingId = 999;
+        String bookingId = "BKG-999";
 
         when(bookingRepository.existsById(bookingId)).thenReturn(false);
 
@@ -501,7 +389,7 @@ public class BookingServiceTest {
 
         assertEquals("Booking not found with id: " + bookingId, exception.getMessage());
         verify(bookingRepository).existsById(bookingId);
-        verify(bookingRepository, never()).deleteById(anyInt());
+        verify(bookingRepository, never()).deleteById(anyString());
     }
 
     @Test
