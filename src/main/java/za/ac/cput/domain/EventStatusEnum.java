@@ -7,10 +7,8 @@ package za.ac.cput.domain;
  **/
 
 public enum EventStatusEnum {
-    UPCOMING,
-    ONGOING,
-    COMPLETED,
-    CANCELLED,
+    PENDING_APPROVAL,
     APPROVED,
+    CANCELLED,
     DISABLED
 }
