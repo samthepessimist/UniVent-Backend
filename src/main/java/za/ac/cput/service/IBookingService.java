@@ -10,16 +10,13 @@ import java.util.Optional;
 
 public interface IBookingService {
     Booking registerForEvent(Student student, Event event);
-    Booking cancelBooking(String bookingReference);
-    Booking confirmBooking(String bookingReference);
-    Optional<Booking> getBookingById(int id);
-    Optional<Booking> getBookingByReference(String bookingReference);
+    Booking cancelBooking(String bookingId);
+    Optional<Booking> getBookingById(String bookingId);
     List<Booking> getAllBookings();
     List<Booking> getBookingsByStudent(Student student);
     List<Booking> getBookingsByEvent(Event event);
     List<Booking> getBookingsByStatus(BookingStatusEnum status);
-    void deleteBooking(String bookingReference);
-    void deleteBookingById(int id);
+    void deleteBookingById(String bookingId);
     boolean hasStudentBookedEvent(Student student, Event event);
     long getBookingCountForEvent(Event event);
 }

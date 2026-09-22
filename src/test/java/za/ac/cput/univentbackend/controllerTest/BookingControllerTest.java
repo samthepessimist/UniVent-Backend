@@ -17,6 +17,7 @@ import za.ac.cput.service.BookingService;
 
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -50,9 +51,9 @@ public class BookingControllerTest {
                 .build();
 
         Venue venue = new Venue.Builder()
-                .setName("Main Hall")
+                .setVenueName("Main Hall")
                 .setAddress("123 Main St")
-                .setCapacity("500")
+                .setCapacity(Integer.parseInt("500"))
                 .build();
 
         return new Event.Builder()
@@ -92,10 +93,10 @@ public class BookingControllerTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
         assertEquals(201, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof Booking);
+        assertInstanceOf(Booking.class, response.getBody());
         Booking responseBooking = (Booking) response.getBody();
-        assertEquals(booking.getBookingReference(), responseBooking.getBookingReference());
-        assertEquals(BookingStatusEnum.PENDING, responseBooking.getStatus());
+        assertEquals(booking.getBookingId(), responseBooking.getBookingId());
+        assertEquals(BookingStatusEnum.CONFIRMED, responseBooking.getStatus());
         verify(bookingService).registerForEvent(student, event);
     }
 
@@ -148,105 +149,65 @@ public class BookingControllerTest {
     @Test
     void testCancelBooking() {
         // Given
-        String bookingReference = "BKG-123456";
+        String bookingId = "BKG-123456";
         Booking booking = createTestBooking();
         booking.cancel();
 
-        when(bookingService.cancelBooking(bookingReference)).thenReturn(booking);
+        when(bookingService.cancelBooking(bookingId)).thenReturn(booking);
 
         // When
-        ResponseEntity<?> response = bookingController.cancelBooking(bookingReference);
+        ResponseEntity<?> response = bookingController.cancelBooking(bookingId);
 
         // Then
         assertNotNull(response);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof Booking);
+        assertInstanceOf(Booking.class, response.getBody());
         Booking responseBooking = (Booking) response.getBody();
         assertEquals(BookingStatusEnum.CANCELLED, responseBooking.getStatus());
-        verify(bookingService).cancelBooking(bookingReference);
+        verify(bookingService).cancelBooking(bookingId);
     }
 
     @Test
     void testCancelBooking_WhenAlreadyCancelled() {
         // Given
-        String bookingReference = "BKG-123456";
+        String bookingId = "BKG-123456";
 
-        when(bookingService.cancelBooking(bookingReference))
+        when(bookingService.cancelBooking(bookingId))
                 .thenThrow(new IllegalStateException("Booking is already cancelled"));
 
         // When
-        ResponseEntity<?> response = bookingController.cancelBooking(bookingReference);
+        ResponseEntity<?> response = bookingController.cancelBooking(bookingId);
 
         // Then
         assertNotNull(response);
         assertEquals(400, response.getStatusCode().value());
         assertEquals("Booking is already cancelled", response.getBody());
-        verify(bookingService).cancelBooking(bookingReference);
+        verify(bookingService).cancelBooking(bookingId);
     }
 
     @Test
     void testCancelBooking_WhenBookingNotFound() {
         // Given
-        String bookingReference = "NONEXISTENT";
+        String bookingId = "NONEXISTENT";
 
-        when(bookingService.cancelBooking(bookingReference))
-                .thenThrow(new IllegalArgumentException("Booking not found with reference: " + bookingReference));
+        when(bookingService.cancelBooking(bookingId))
+                .thenThrow(new IllegalArgumentException("Booking not found with id: " + bookingId));
 
         // When
-        ResponseEntity<?> response = bookingController.cancelBooking(bookingReference);
+        ResponseEntity<?> response = bookingController.cancelBooking(bookingId);
 
         // Then
         assertNotNull(response);
         assertEquals(400, response.getStatusCode().value());
-        assertEquals("Booking not found with reference: " + bookingReference, response.getBody());
-        verify(bookingService).cancelBooking(bookingReference);
-    }
-
-    @Test
-    void testConfirmBooking() {
-        // Given
-        String bookingReference = "BKG-123456";
-        Booking booking = createTestBooking();
-        booking.confirm();
-
-        when(bookingService.confirmBooking(bookingReference)).thenReturn(booking);
-
-        // When
-        ResponseEntity<?> response = bookingController.confirmBooking(bookingReference);
-
-        // Then
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof Booking);
-        Booking responseBooking = (Booking) response.getBody();
-        assertEquals(BookingStatusEnum.CONFIRMED, responseBooking.getStatus());
-        verify(bookingService).confirmBooking(bookingReference);
-    }
-
-    @Test
-    void testConfirmBooking_WhenCancelled() {
-        // Given
-        String bookingReference = "BKG-123456";
-
-        when(bookingService.confirmBooking(bookingReference))
-                .thenThrow(new IllegalStateException("Cannot confirm a cancelled booking"));
-
-        // When
-        ResponseEntity<?> response = bookingController.confirmBooking(bookingReference);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(400, response.getStatusCode().value());
-        assertEquals("Cannot confirm a cancelled booking", response.getBody());
-        verify(bookingService).confirmBooking(bookingReference);
+        assertEquals("Booking not found with id: " + bookingId, response.getBody());
+        verify(bookingService).cancelBooking(bookingId);
     }
 
     @Test
     void testGetBookingById() {
         // Given
-        int bookingId = 1;
+        String bookingId = "BKG-1";
         Booking booking = createTestBooking();
 
         when(bookingService.getBookingById(bookingId)).thenReturn(Optional.of(booking));
@@ -258,16 +219,16 @@ public class BookingControllerTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof Booking);
+        assertInstanceOf(Booking.class, response.getBody());
         Booking responseBooking = (Booking) response.getBody();
-        assertEquals(booking.getBookingReference(), responseBooking.getBookingReference());
+        assertEquals(booking.getBookingId(), responseBooking.getBookingId());
         verify(bookingService).getBookingById(bookingId);
     }
 
     @Test
     void testGetBookingById_WhenNotFound() {
         // Given
-        int bookingId = 999;
+        String bookingId = "BKG-999";
 
         when(bookingService.getBookingById(bookingId)).thenReturn(Optional.empty());
 
@@ -279,44 +240,6 @@ public class BookingControllerTest {
         assertEquals(404, response.getStatusCode().value());
         assertEquals("Booking not found with id: " + bookingId, response.getBody());
         verify(bookingService).getBookingById(bookingId);
-    }
-
-    @Test
-    void testGetBookingByReference() {
-        // Given
-        String bookingReference = "BKG-123456";
-        Booking booking = createTestBooking();
-
-        when(bookingService.getBookingByReference(bookingReference)).thenReturn(Optional.of(booking));
-
-        // When
-        ResponseEntity<?> response = bookingController.getBookingByReference(bookingReference);
-
-        // Then
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof Booking);
-        Booking responseBooking = (Booking) response.getBody();
-        assertEquals(bookingReference, responseBooking.getBookingReference());
-        verify(bookingService).getBookingByReference(bookingReference);
-    }
-
-    @Test
-    void testGetBookingByReference_WhenNotFound() {
-        // Given
-        String bookingReference = "NONEXISTENT";
-
-        when(bookingService.getBookingByReference(bookingReference)).thenReturn(Optional.empty());
-
-        // When
-        ResponseEntity<?> response = bookingController.getBookingByReference(bookingReference);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(404, response.getStatusCode().value());
-        assertEquals("Booking not found with reference: " + bookingReference, response.getBody());
-        verify(bookingService).getBookingByReference(bookingReference);
     }
 
     @Test
@@ -341,7 +264,7 @@ public class BookingControllerTest {
     @Test
     void testGetAllBookings_WhenEmpty() {
         // Given
-        when(bookingService.getAllBookings()).thenReturn(Arrays.asList());
+        when(bookingService.getAllBookings()).thenReturn(List.of());
 
         // When
         ResponseEntity<List<Booking>> response = bookingController.getAllBookings();
@@ -357,10 +280,10 @@ public class BookingControllerTest {
     @Test
     void testGetBookingsByStatus() {
         // Given
-        BookingStatusEnum status = BookingStatusEnum.PENDING;
+        BookingStatusEnum status = BookingStatusEnum.CONFIRMED;
         Booking booking = createTestBooking();
 
-        when(bookingService.getBookingsByStatus(status)).thenReturn(Arrays.asList(booking));
+        when(bookingService.getBookingsByStatus(status)).thenReturn(Collections.singletonList(booking));
 
         // When
         ResponseEntity<?> response = bookingController.getBookingsByStatus(status);
@@ -369,50 +292,18 @@ public class BookingControllerTest {
         assertNotNull(response);
         assertNotNull(response.getBody());
         assertEquals(200, response.getStatusCode().value());
-        assertTrue(response.getBody() instanceof List);
+        assertInstanceOf(List.class, response.getBody());
         @SuppressWarnings("unchecked")
         List<Booking> bookings = (List<Booking>) response.getBody();
         assertEquals(1, bookings.size());
-        assertEquals(BookingStatusEnum.PENDING, bookings.get(0).getStatus());
+        assertEquals(BookingStatusEnum.CONFIRMED, bookings.get(0).getStatus());
         verify(bookingService).getBookingsByStatus(status);
-    }
-
-    @Test
-    void testDeleteBooking() {
-        // Given
-        String bookingReference = "BKG-123456";
-        doNothing().when(bookingService).deleteBooking(bookingReference);
-
-        // When
-        ResponseEntity<?> response = bookingController.deleteBooking(bookingReference);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(204, response.getStatusCode().value());
-        verify(bookingService).deleteBooking(bookingReference);
-    }
-
-    @Test
-    void testDeleteBooking_WhenNotFound() {
-        // Given
-        String bookingReference = "NONEXISTENT";
-        doThrow(new IllegalArgumentException("Booking not found with reference: " + bookingReference))
-                .when(bookingService).deleteBooking(bookingReference);
-
-        // When
-        ResponseEntity<?> response = bookingController.deleteBooking(bookingReference);
-
-        // Then
-        assertNotNull(response);
-        assertEquals(404, response.getStatusCode().value());
-        assertEquals("Booking not found with reference: " + bookingReference, response.getBody());
-        verify(bookingService).deleteBooking(bookingReference);
     }
 
     @Test
     void testDeleteBookingById() {
         // Given
-        int bookingId = 1;
+        String bookingId = "BKG-1";
         doNothing().when(bookingService).deleteBookingById(bookingId);
 
         // When
@@ -427,7 +318,7 @@ public class BookingControllerTest {
     @Test
     void testDeleteBookingById_WhenNotFound() {
         // Given
-        int bookingId = 999;
+        String bookingId = "BKG-999";
         doThrow(new IllegalArgumentException("Booking not found with id: " + bookingId))
                 .when(bookingService).deleteBookingById(bookingId);
 
@@ -447,7 +338,7 @@ public class BookingControllerTest {
         when(bookingService.hasStudentBookedEvent(any(), any())).thenReturn(true);
 
         // When
-        ResponseEntity<?> response = bookingController.hasStudentBookedEvent(1, 1);
+        ResponseEntity<?> response = bookingController.hasStudentBookedEvent("STU001", "EVT001");
 
         // Then
         assertNotNull(response);
@@ -463,7 +354,7 @@ public class BookingControllerTest {
         when(bookingService.hasStudentBookedEvent(any(), any())).thenReturn(false);
 
         // When
-        ResponseEntity<?> response = bookingController.hasStudentBookedEvent(1, 1);
+        ResponseEntity<?> response = bookingController.hasStudentBookedEvent("STU001", "EVT001");
 
         // Then
         assertNotNull(response);
@@ -479,7 +370,7 @@ public class BookingControllerTest {
         when(bookingService.getBookingCountForEvent(any())).thenReturn(5L);
 
         // When
-        ResponseEntity<?> response = bookingController.getBookingCountForEvent(1);
+        ResponseEntity<?> response = bookingController.getBookingCountForEvent("EVT001");
 
         // Then
         assertNotNull(response);
@@ -495,7 +386,7 @@ public class BookingControllerTest {
         when(bookingService.getBookingCountForEvent(any())).thenReturn(0L);
 
         // When
-        ResponseEntity<?> response = bookingController.getBookingCountForEvent(1);
+        ResponseEntity<?> response = bookingController.getBookingCountForEvent("EVT001");
 
         // Then
         assertNotNull(response);

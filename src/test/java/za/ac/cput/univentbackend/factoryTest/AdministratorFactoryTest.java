@@ -2,6 +2,7 @@ package za.ac.cput.univentbackend.factoryTest;
 
 import org.junit.jupiter.api.Test;
 import za.ac.cput.domain.Administrator;
+import za.ac.cput.domain.Event;
 import za.ac.cput.domain.User;
 import za.ac.cput.factory.AdministratorFactory;
 

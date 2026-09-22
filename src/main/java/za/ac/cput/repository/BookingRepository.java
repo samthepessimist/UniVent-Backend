@@ -7,12 +7,8 @@ import za.ac.cput.domain.Event;
 import za.ac.cput.domain.BookingStatusEnum;
 
 import java.util.List;
-import java.util.Optional;
 
-public interface BookingRepository extends JpaRepository<Booking, Integer> {
-
-    // Find booking by booking reference
-    Optional<Booking> findByBookingReference(String bookingReference);
+public interface BookingRepository extends JpaRepository<Booking, String> {
 
     // Find bookings by student
     List<Booking> findByStudent(Student student);
@@ -28,7 +24,4 @@ public interface BookingRepository extends JpaRepository<Booking, Integer> {
 
     // Count bookings for an event
     long countByEvent(Event event);
-
-    // Delete booking by reference
-    void deleteByBookingReference(String bookingReference);
 }

@@ -24,13 +24,12 @@ public class BookingFactoryTest {
 
         // Then
         assertNotNull(booking);
-        assertNotNull(booking.getBookingReference());
-        assertTrue(booking.getBookingReference().startsWith("BKG-"));
+        assertNotNull(booking.getBookingId());
+        assertTrue(booking.getBookingId().startsWith("BKG-"));
         assertEquals(student, booking.getStudent());
         assertEquals(event, booking.getEvent());
-        assertEquals(BookingStatusEnum.PENDING, booking.getStatus());
-        assertNotNull(booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
+        assertEquals(BookingStatusEnum.CONFIRMED, booking.getStatus());
+        assertNotNull(booking.getBookingDate());
     }
 
     @Test
@@ -42,12 +41,11 @@ public class BookingFactoryTest {
 
         // Then
         assertNotNull(booking);
-        assertNotNull(booking.getBookingReference());
+        assertNotNull(booking.getBookingId());
         assertEquals(student, booking.getStudent());
         assertEquals(event, booking.getEvent());
         assertEquals(BookingStatusEnum.CONFIRMED, booking.getStatus());
-        assertNotNull(booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
+        assertNotNull(booking.getBookingDate());
     }
 
     @Test
@@ -62,29 +60,42 @@ public class BookingFactoryTest {
         assertEquals(student, booking.getStudent());
         assertEquals(event, booking.getEvent());
         assertEquals(BookingStatusEnum.CANCELLED, booking.getStatus());
-        assertNotNull(booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
+        assertNotNull(booking.getBookingDate());
     }
 
     @Test
-    public void shouldCreateBookingWithReference() {
-        // Given
-        String bookingReference = "BKG-TEST-001";
-        LocalDateTime bookingTime = LocalDateTime.now().minusDays(1);
-
+    public void shouldCreateBookingWithStatusAttended() {
         // When
-        Booking booking = BookingFactory.createBookingWithReference(
-                bookingReference, student, event, BookingStatusEnum.CONFIRMED, bookingTime
+        Booking booking = BookingFactory.createBookingWithStatus(
+                student, event, BookingStatusEnum.ATTENDED
         );
 
         // Then
         assertNotNull(booking);
-        assertEquals(bookingReference, booking.getBookingReference());
+        assertEquals(student, booking.getStudent());
+        assertEquals(event, booking.getEvent());
+        assertEquals(BookingStatusEnum.ATTENDED, booking.getStatus());
+        assertNotNull(booking.getBookingDate());
+    }
+
+    @Test
+    public void shouldCreateBookingWithGivenId() {
+        // Given
+        String bookingId = "BKG-TEST-001";
+        LocalDateTime bookingDate = LocalDateTime.now().minusDays(1);
+
+        // When
+        Booking booking = BookingFactory.createBookingWithId(
+                bookingId, student, event, BookingStatusEnum.CONFIRMED, bookingDate
+        );
+
+        // Then
+        assertNotNull(booking);
+        assertEquals(bookingId, booking.getBookingId());
         assertEquals(student, booking.getStudent());
         assertEquals(event, booking.getEvent());
         assertEquals(BookingStatusEnum.CONFIRMED, booking.getStatus());
-        assertEquals(bookingTime, booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
+        assertEquals(bookingDate, booking.getBookingDate());
     }
 
     @Test
@@ -109,7 +120,7 @@ public class BookingFactoryTest {
     public void shouldThrowIfStudentIsNullWithStatus() {
         // When & Then
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                BookingFactory.createBookingWithStatus(null, event, BookingStatusEnum.PENDING));
+                BookingFactory.createBookingWithStatus(null, event, BookingStatusEnum.CONFIRMED));
 
         assertEquals("Student cannot be null", exception.getMessage());
     }
@@ -118,7 +129,7 @@ public class BookingFactoryTest {
     public void shouldThrowIfEventIsNullWithStatus() {
         // When & Then
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                BookingFactory.createBookingWithStatus(student, null, BookingStatusEnum.PENDING));
+                BookingFactory.createBookingWithStatus(student, null, BookingStatusEnum.CONFIRMED));
 
         assertEquals("Event cannot be null", exception.getMessage());
     }
@@ -133,72 +144,72 @@ public class BookingFactoryTest {
     }
 
     @Test
-    public void shouldThrowIfStudentIsNullWithReference() {
+    public void shouldThrowIfStudentIsNullWithId() {
         // Given
-        String reference = "BKG-TEST-002";
-        LocalDateTime time = LocalDateTime.now();
+        String bookingId = "BKG-TEST-002";
+        LocalDateTime bookingDate = LocalDateTime.now();
 
         // When & Then
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                BookingFactory.createBookingWithReference(reference, null, event,
-                        BookingStatusEnum.PENDING, time));
+                BookingFactory.createBookingWithId(bookingId, null, event,
+                        BookingStatusEnum.CONFIRMED, bookingDate));
 
         assertEquals("Student cannot be null", exception.getMessage());
     }
 
     @Test
-    public void shouldThrowIfEventIsNullWithReference() {
+    public void shouldThrowIfEventIsNullWithId() {
         // Given
-        String reference = "BKG-TEST-002";
-        LocalDateTime time = LocalDateTime.now();
+        String bookingId = "BKG-TEST-002";
+        LocalDateTime bookingDate = LocalDateTime.now();
 
         // When & Then
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                BookingFactory.createBookingWithReference(reference, student, null,
-                        BookingStatusEnum.PENDING, time));
+                BookingFactory.createBookingWithId(bookingId, student, null,
+                        BookingStatusEnum.CONFIRMED, bookingDate));
 
         assertEquals("Event cannot be null", exception.getMessage());
     }
 
     @Test
-    public void shouldThrowIfStatusIsNullWithReference() {
+    public void shouldThrowIfStatusIsNullWithId() {
         // Given
-        String reference = "BKG-TEST-002";
-        LocalDateTime time = LocalDateTime.now();
+        String bookingId = "BKG-TEST-002";
+        LocalDateTime bookingDate = LocalDateTime.now();
 
         // When & Then
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                BookingFactory.createBookingWithReference(reference, student, event,
-                        null, time));
+                BookingFactory.createBookingWithId(bookingId, student, event,
+                        null, bookingDate));
 
         assertEquals("Status cannot be null", exception.getMessage());
     }
 
     @Test
-    public void shouldThrowIfBookingTimeIsNull() {
+    public void shouldThrowIfBookingDateIsNull() {
         // Given
-        String reference = "BKG-TEST-002";
+        String bookingId = "BKG-TEST-002";
 
         // When & Then
         Exception exception = assertThrows(IllegalArgumentException.class, () ->
-                BookingFactory.createBookingWithReference(reference, student, event,
-                        BookingStatusEnum.PENDING, null));
+                BookingFactory.createBookingWithId(bookingId, student, event,
+                        BookingStatusEnum.CONFIRMED, null));
 
-        assertEquals("Booking time cannot be null", exception.getMessage());
+        assertEquals("Booking date cannot be null", exception.getMessage());
     }
 
     @Test
-    public void shouldGenerateUniqueBookingReferences() {
+    public void shouldGenerateUniqueBookingIds() {
         // Given
         Booking booking1 = BookingFactory.createBooking(student, event);
         Booking booking2 = BookingFactory.createBooking(student, event);
 
         // Then
-        assertNotNull(booking1.getBookingReference());
-        assertNotNull(booking2.getBookingReference());
-        assertNotEquals(booking1.getBookingReference(), booking2.getBookingReference());
-        assertTrue(booking1.getBookingReference().startsWith("BKG-"));
-        assertTrue(booking2.getBookingReference().startsWith("BKG-"));
+        assertNotNull(booking1.getBookingId());
+        assertNotNull(booking2.getBookingId());
+        assertNotEquals(booking1.getBookingId(), booking2.getBookingId());
+        assertTrue(booking1.getBookingId().startsWith("BKG-"));
+        assertTrue(booking2.getBookingId().startsWith("BKG-"));
     }
 
     @Test
@@ -210,63 +221,44 @@ public class BookingFactoryTest {
         Booking booking = BookingFactory.createBooking(student, event);
 
         // Then
-        assertNotNull(booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
-        assertTrue(booking.getBookingTime().isAfter(beforeCreation) ||
-                booking.getBookingTime().equals(beforeCreation));
-        assertTrue(booking.getLastUpdated().isAfter(beforeCreation) ||
-                booking.getLastUpdated().equals(beforeCreation));
+        assertNotNull(booking.getBookingDate());
+        assertTrue(booking.getBookingDate().isAfter(beforeCreation) ||
+                booking.getBookingDate().equals(beforeCreation));
     }
 
     @Test
-    public void shouldSetLastUpdatedForBookingWithReference() {
+    public void shouldSetGivenBookingDateForBookingWithId() {
         // Given
-        String reference = "BKG-TEST-003";
-        LocalDateTime bookingTime = LocalDateTime.now().minusDays(2);
-        LocalDateTime beforeCreation = LocalDateTime.now();
+        String bookingId = "BKG-TEST-003";
+        LocalDateTime bookingDate = LocalDateTime.now().minusDays(2);
 
         // When
-        Booking booking = BookingFactory.createBookingWithReference(
-                reference, student, event, BookingStatusEnum.PENDING, bookingTime
+        Booking booking = BookingFactory.createBookingWithId(
+                bookingId, student, event, BookingStatusEnum.CONFIRMED, bookingDate
         );
 
         // Then
         assertNotNull(booking);
-        assertEquals(reference, booking.getBookingReference());
-        assertEquals(bookingTime, booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
-        assertTrue(booking.getLastUpdated().isAfter(beforeCreation) ||
-                booking.getLastUpdated().equals(beforeCreation));
+        assertEquals(bookingId, booking.getBookingId());
+        assertEquals(bookingDate, booking.getBookingDate());
     }
 
     @Test
-    public void shouldCreateBookingWithReferenceFormat() {
+    public void shouldCreateBookingWithIdFormat() {
         // When
         Booking booking = BookingFactory.createBooking(student, event);
-        String reference = booking.getBookingReference();
+        String bookingId = booking.getBookingId();
 
         // Then
-        assertNotNull(reference);
-        assertTrue(reference.startsWith("BKG-"));
-        assertTrue(reference.length() > 10);
-        assertTrue(reference.matches("BKG-\\d+-\\d{4}"));
+        assertNotNull(bookingId);
+        assertTrue(bookingId.startsWith("BKG-"));
+        assertTrue(bookingId.length() > 10);
     }
 
     @Test
-    public void shouldCreateBookingWithPendingStatusByDefault() {
+    public void shouldCreateBookingWithConfirmedStatusByDefault() {
         // When
         Booking booking = BookingFactory.createBooking(student, event);
-
-        // Then
-        assertEquals(BookingStatusEnum.PENDING, booking.getStatus());
-    }
-
-    @Test
-    public void shouldCreateBookingWithConfirmedStatus() {
-        // When
-        Booking booking = BookingFactory.createBookingWithStatus(
-                student, event, BookingStatusEnum.CONFIRMED
-        );
 
         // Then
         assertEquals(BookingStatusEnum.CONFIRMED, booking.getStatus());
@@ -286,22 +278,21 @@ public class BookingFactoryTest {
     @Test
     public void shouldSetAllFieldsForBooking() {
         // Given
-        String reference = "BKG-TEST-004";
-        LocalDateTime bookingTime = LocalDateTime.now().minusHours(5);
+        String bookingId = "BKG-TEST-004";
+        LocalDateTime bookingDate = LocalDateTime.now().minusHours(5);
 
         // When
-        Booking booking = BookingFactory.createBookingWithReference(
-                reference, student, event, BookingStatusEnum.CONFIRMED, bookingTime
+        Booking booking = BookingFactory.createBookingWithId(
+                bookingId, student, event, BookingStatusEnum.CONFIRMED, bookingDate
         );
 
         // Then
         assertNotNull(booking);
-        assertEquals(reference, booking.getBookingReference());
+        assertEquals(bookingId, booking.getBookingId());
         assertEquals(student, booking.getStudent());
         assertEquals(event, booking.getEvent());
         assertEquals(BookingStatusEnum.CONFIRMED, booking.getStatus());
-        assertEquals(bookingTime, booking.getBookingTime());
-        assertNotNull(booking.getLastUpdated());
+        assertEquals(bookingDate, booking.getBookingDate());
     }
 
     @Test
@@ -319,6 +310,6 @@ public class BookingFactoryTest {
         assertNotNull(booking2);
         assertNotEquals(booking1.getStudent(), booking2.getStudent());
         assertNotEquals(booking1.getEvent(), booking2.getEvent());
-        assertNotEquals(booking1.getBookingReference(), booking2.getBookingReference());
+        assertNotEquals(booking1.getBookingId(), booking2.getBookingId());
     }
 }

@@ -15,9 +15,8 @@ public class BookingFactory {
         return new Booking.Builder()
                 .setStudent(student)
                 .setEvent(event)
-                .setBookingTime(LocalDateTime.now())
-                .setStatus(BookingStatusEnum.PENDING)
-                .setLastUpdated(LocalDateTime.now())
+                .setBookingDate(LocalDateTime.now())
+                .setStatus(BookingStatusEnum.CONFIRMED)
                 .build();
     }
 
@@ -25,22 +24,20 @@ public class BookingFactory {
         return new Booking.Builder()
                 .setStudent(student)
                 .setEvent(event)
-                .setBookingTime(LocalDateTime.now())
+                .setBookingDate(LocalDateTime.now())
                 .setStatus(status)
-                .setLastUpdated(LocalDateTime.now())
                 .build();
     }
 
-    public static Booking createBookingWithReference(String bookingReference, Student student,
-                                                     Event event, BookingStatusEnum status,
-                                                     LocalDateTime bookingTime) {
+    public static Booking createBookingWithId(String bookingId, Student student,
+                                              Event event, BookingStatusEnum status,
+                                              LocalDateTime bookingDate) {
         return new Booking.Builder()
-                .setBookingReference(bookingReference)
+                .setBookingId(bookingId)
                 .setStudent(student)
                 .setEvent(event)
-                .setBookingTime(bookingTime)
+                .setBookingDate(bookingDate)
                 .setStatus(status)
-                .setLastUpdated(LocalDateTime.now())
                 .build();
     }
 }
