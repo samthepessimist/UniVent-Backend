@@ -33,7 +33,7 @@ public class AdministratorController {
     @GetMapping("/events")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<EventResponseDTO>> getAllEvents() {
-        List<Event> events = administratorService.getAllEvents();
+        List<Event> events = administratorService.monitorEvents();
         List<EventResponseDTO> eventDTOs = events.stream()
                 .map(event -> new EventResponseDTO(
                         event.getEventId(),
@@ -49,7 +49,7 @@ public class AdministratorController {
 
     @PatchMapping("/events/{id}/approve")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EventResponseDTO> approveEvent(@PathVariable Long id) {
+    public ResponseEntity<EventResponseDTO> approveEvent(@PathVariable Integer id) {
         Event event = administratorService.approveEvent(id);
         if (event == null) {
             return ResponseEntity.notFound().build();
@@ -67,7 +67,7 @@ public class AdministratorController {
 
     @PatchMapping("/events/{id}/disable")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<EventResponseDTO> disableEvent(@PathVariable Long id) {
+    public ResponseEntity<EventResponseDTO> disableEvent(@PathVariable Integer id) {
         Event event = administratorService.disableEvent(id);
         if (event == null) {
             return ResponseEntity.notFound().build();
@@ -86,7 +86,7 @@ public class AdministratorController {
     @GetMapping("/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponseDTO>> getAllUsers() {
-        List<User> users = administratorService.getAllUsers();
+        List<User> users = administratorService.viewAllUsers();
         List<UserResponseDTO> userDTOs = users.stream()
                 .map(user -> new UserResponseDTO(
                         user.getUserId(),
@@ -102,7 +102,7 @@ public class AdministratorController {
 
     @PatchMapping("/users/{id}/disable")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserResponseDTO> disableUser(@PathVariable Long id) {
+    public ResponseEntity<UserResponseDTO> disableUser(@PathVariable String id) {
         User user = administratorService.disableUser(id);
         if (user == null) {
             return ResponseEntity.notFound().build();

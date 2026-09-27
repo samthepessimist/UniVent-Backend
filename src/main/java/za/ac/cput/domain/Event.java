@@ -65,6 +65,10 @@ public class Event {
         this.status = status;
     }
 
+    public void setOrganizer(Organizer organizer) {
+        this.organizer = organizer;
+    }
+
     @Override
     public String toString() {
         return "Event{" +

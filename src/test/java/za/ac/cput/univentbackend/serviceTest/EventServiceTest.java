@@ -7,6 +7,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import za.ac.cput.domain.Event;
+import za.ac.cput.domain.EventStatusEnum;
 import za.ac.cput.repository.EventRepository;
 import za.ac.cput.service.EventService;
 
@@ -43,6 +44,8 @@ public class EventServiceTest {
         assertNotNull(result);
         assertEquals("Tech Talk", result.getName());
         assertEquals("Java Workshop", result.getDescription());
+        // Creation must never bypass the administrator approval workflow.
+        assertEquals(EventStatusEnum.PENDING_APPROVAL, result.getStatus());
         verify(repository).save(any(Event.class));
     }
 

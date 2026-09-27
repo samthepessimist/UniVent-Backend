@@ -11,6 +11,7 @@ public enum EventStatusEnum {
     ONGOING,
     COMPLETED,
     CANCELLED,
+    PENDING_APPROVAL,
     APPROVED,
     DISABLED
 }

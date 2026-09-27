@@ -5,6 +5,16 @@ import org.springframework.web.bind.annotation.*;
 import za.ac.cput.domain.Event;
 import za.ac.cput.service.EventService;
 
+/**
+ * Read-only event endpoints.
+ *
+ * <p>Event creation and updates were removed from this controller on purpose:
+ * they accepted an organizer from the request body without any ownership check,
+ * allowing an organizer to bypass the administrator approval workflow. All
+ * organizer writes now go through
+ * {@code /api/organizers/{organizerId}/events}, which derives the organizer from
+ * the authenticated JWT and forces new events to {@code PENDING_APPROVAL}.</p>
+ */
 @RestController
 @RequestMapping("/api/events")
 public class EventController {
@@ -15,22 +25,10 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    @PostMapping
-    public ResponseEntity<Event> createEvent(@RequestBody Event event) {
-        Event createdEvent = eventService.create(event);
-        return ResponseEntity.ok(createdEvent);
-    }
-
     @GetMapping("/{id}")
     public ResponseEntity<Event> getEventById(@PathVariable Integer id) {
         Event event = eventService.read(id);
         return ResponseEntity.ok(event);
-    }
-
-    @PutMapping
-    public ResponseEntity<Event> updateEvent(@RequestBody Event event) {
-        Event updatedEvent = eventService.update(event);
-        return ResponseEntity.ok(updatedEvent);
     }
 
     @DeleteMapping("/{id}")

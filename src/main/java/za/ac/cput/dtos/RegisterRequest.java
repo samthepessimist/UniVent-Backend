@@ -16,7 +16,7 @@ public class RegisterRequest {
     // Organizer-specific
     private String organizationName;
     private String organizationType;
-    private String contactEmail;
+    private String organizationEmail;
 
     public RegisterRequest() {}
 
@@ -31,5 +31,5 @@ public class RegisterRequest {
     public int getYearOfStudy() { return yearOfStudy; }
     public String getOrganizationName() { return organizationName; }
     public String getOrganizationType() { return organizationType; }
-    public String getContactEmail() { return contactEmail; }
+    public String getOrganizationEmail() { return organizationEmail; }
 }
