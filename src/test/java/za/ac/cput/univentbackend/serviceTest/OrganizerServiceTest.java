@@ -29,7 +29,7 @@ public class OrganizerServiceTest {
 	void testCreateOrganizer() {
 		Organizer org = new Organizer.Builder()
 				.setOrganizationName("UniVent")
-				.setContactEmail("info@univent.com")
+				.setOrganizationEmail("info@univent.com")
 				.build();
 
 		when(repository.save(any(Organizer.class)))
@@ -39,7 +39,7 @@ public class OrganizerServiceTest {
 
 		assertNotNull(result);
 		assertEquals("UniVent", result.getOrganizationName());
-		assertEquals("info@univent.com", result.getContactEmail());
+		assertEquals("info@univent.com", result.getOrganizationEmail());
 		verify(repository).save(any(Organizer.class));
 	}
 
@@ -47,7 +47,7 @@ public class OrganizerServiceTest {
 	void testReadOrganizer() {
 		Organizer org = new Organizer.Builder()
 				.setOrganizationName("OrgName")
-				.setContactEmail("contact@org.com")
+				.setOrganizationEmail("contact@org.com")
 				.build();
 
 		when(repository.findById("1")).thenReturn(Optional.of(org));

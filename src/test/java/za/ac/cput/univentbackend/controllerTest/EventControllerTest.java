@@ -23,27 +23,9 @@ public class EventControllerTest {
     @InjectMocks
     private EventController controller;
 
-    @Test
-    public void testCreateEvent() {
-
-        Event event = new Event.Builder()
-                .setName("Tech Talk")
-                .setDescription("Java Workshop")
-                .setDateTime("2026-08-15T10:00:00")
-                .setMaxAttendees(100)
-                .build();
-
-        when(service.create(event)).thenReturn(event);
-
-        ResponseEntity<Event> response = controller.createEvent(event);
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals("Tech Talk", response.getBody().getName());
-        assertEquals("Java Workshop", response.getBody().getDescription());
-
-        verify(service).create(event);
-    }
+    // Event creation/update were intentionally removed from EventController so
+    // that all organizer writes go through /api/organizers/**, where the
+    // organizer is derived from the authenticated principal. See OrganizerControllerTest.
 
     @Test
     public void testGetEventById() {
@@ -62,26 +44,6 @@ public class EventControllerTest {
         assertEquals("Tech Talk", response.getBody().getName());
 
         verify(service).read(1);
-    }
-
-    @Test
-    public void testUpdateEvent() {
-
-        Event event = new Event.Builder()
-                .setName("Updated Event")
-                .setDescription("Updated Description")
-                .build();
-
-        when(service.update(event)).thenReturn(event);
-
-        ResponseEntity<Event> response = controller.updateEvent(event);
-
-        assertNotNull(response);
-        assertNotNull(response.getBody());
-        assertEquals("Updated Event", response.getBody().getName());
-        assertEquals("Updated Description", response.getBody().getDescription());
-
-        verify(service).update(event);
     }
 
     @Test

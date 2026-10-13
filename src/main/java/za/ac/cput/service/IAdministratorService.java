@@ -10,22 +10,36 @@ import java.util.List;
 /**Student name: Amanda Msutu
  * Student number: 222428600
  * Group: 3H
- * AdministratorFactory.java
+ * IAdministratorService.java
  * Date: 05 July 2026
- * **/
+ **/
 
 public interface IAdministratorService extends IService<Administrator, String> {
     Administrator findByAdministratorNumber(String administratorNumber);
 
-    List<User> getAllUsers();
 
-    List<Event> getAllEvents();
+    List<User> viewAllUsers();
 
-    Event approveEvent(Long eventId);
 
-    Event disableEvent(Long eventId);
+    List<Event> viewPendingEvents();
 
-    User disableUser(Long userId);
+
+    List<Event> monitorEvents();
+
+
+    Event approveEvent(Integer eventId);
+
+
+    Event rejectEvent(Integer eventId);
+
+
+    Event disableEvent(Integer eventId);
+
+
+    void deleteUser(String userId);
+
+
+    User disableUser(String userId);
 
     PlatformStatsDTO getPlatformStats();
 }

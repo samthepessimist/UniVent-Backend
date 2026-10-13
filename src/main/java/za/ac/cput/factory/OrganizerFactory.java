@@ -1,17 +1,16 @@
 package za.ac.cput.factory;
 
-import za.ac.cput.domain.Event;
 import za.ac.cput.domain.Organizer;
+import za.ac.cput.domain.RoleEnum;
 import za.ac.cput.util.Helper;
-
-import java.util.List;
 
 /**Student name: Amanda Msutu
  * Student number: 222428600
  * Group: 3H
- * AdministratorFactory.java
+ * OrganizerFactory.java
  * Date: 05 July 2026
- * **/
+ * Updated: 12 September 2026 — removed events list; contactEmail -> organizationEmail
+ **/
 
 public class OrganizerFactory {
     public static Organizer createOrganizer(String name,
@@ -20,8 +19,7 @@ public class OrganizerFactory {
                                             String phoneNumber,
                                             String organizationName,
                                             String organizationType,
-                                            List<Event> events,
-                                            String contactEmail) {
+                                            String organizationEmail) {
         if (Helper.isNullOrEmpty(name)) {
             throw new IllegalArgumentException("Name is required");
         }
@@ -38,26 +36,28 @@ public class OrganizerFactory {
             throw new IllegalArgumentException("Invalid phone number");
         }
 
-        if(Helper.isNullOrEmpty(organizationName)){
+        if (Helper.isNullOrEmpty(organizationName)) {
             throw new IllegalArgumentException("Organization name is required");
         }
 
-        if (Helper.isNullOrEmpty(organizationType)){
+        if (Helper.isNullOrEmpty(organizationType)) {
             throw new IllegalArgumentException("Organization type is required");
         }
 
-        if (!Helper.isValidEmail(contactEmail)){
-            throw new IllegalArgumentException("Invalid contact email");
+        if (!Helper.isValidEmail(organizationEmail)) {
+            throw new IllegalArgumentException("Invalid organization email");
         }
+
         return new Organizer.Builder()
+                .setUserId(Helper.generateId())
                 .setName(name)
                 .setEmail(email)
                 .setPasswordHash(password)
                 .setPhoneNumber(phoneNumber)
+                .setRole(RoleEnum.ORGANIZER)        // role is fixed for this subclass
                 .setOrganizationName(organizationName)
                 .setOrganizationType(organizationType)
-                .setEvents(events)
-                .setContactEmail(contactEmail)
+                .setOrganizationEmail(organizationEmail)
                 .build();
     }
 }

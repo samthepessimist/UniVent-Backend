@@ -16,12 +16,12 @@ import java.util.List;
 /**Student name: Amanda Msutu
  * Student number: 222428600
  * Group: 3H
- * AdministratorFactory.java
+ * AdministratorService.java
  * Date: 05 July 2026
- * **/
+ **/
 
 @Service
-public class AdministratorService implements IAdministratorService{
+public class AdministratorService implements IAdministratorService {
     private final AdministratorRepository repository;
     private final UserRepository userRepository;
     private final EventRepository eventRepository;
@@ -47,7 +47,7 @@ public class AdministratorService implements IAdministratorService{
         if (administrator == null) {
             return null;
         }
-        return  repository.save(administrator);
+        return repository.save(administrator);
     }
 
     @Override
@@ -57,7 +57,7 @@ public class AdministratorService implements IAdministratorService{
 
     @Override
     public Administrator update(Administrator administrator) {
-        if(administrator == null) {
+        if (administrator == null) {
             return null;
         }
         return repository.save(administrator);
@@ -68,39 +68,65 @@ public class AdministratorService implements IAdministratorService{
         repository.deleteById(id);
     }
 
+
     @Override
-    public List<User> getAllUsers() {
+    public List<User> viewAllUsers() {
         return userRepository.findAll();
     }
 
+
     @Override
-    public List<Event> getAllEvents() {
+    public List<Event> viewPendingEvents() {
+        return eventRepository.findByStatus(EventStatusEnum.PENDING_APPROVAL);
+    }
+
+
+    @Override
+    public List<Event> monitorEvents() {
         return eventRepository.findAll();
     }
 
-    @Override
-    public Event approveEvent(Long eventId) {
-        Event event = eventRepository.findById(eventId.intValue()).orElse(null);
-        if (event != null) {
-            event.setStatus(EventStatusEnum.APPROVED);
-            return eventRepository.save(event);
-        }
-        return null;
-    }
 
     @Override
-    public Event disableEvent(Long eventId) {
-        Event event = eventRepository.findById(eventId.intValue()).orElse(null);
-        if (event != null) {
-            event.setStatus(EventStatusEnum.DISABLED);
-            return eventRepository.save(event);
-        }
-        return null;
+    public Event approveEvent(Integer eventId) {
+        return changeEventStatus(eventId, EventStatusEnum.APPROVED);
     }
 
+
     @Override
-    public User disableUser(Long userId) {
-        User user = userRepository.findById(userId.toString()).orElse(null);
+    public Event rejectEvent(Integer eventId) {
+        // EventStatusEnum has no REJECTED value, so a rejected pending event
+        // becomes CANCELLED. If the team adds REJECTED to the enum, use it here.
+        return changeEventStatus(eventId, EventStatusEnum.CANCELLED);
+    }
+
+
+    @Override
+    public Event disableEvent(Integer eventId) {
+        return changeEventStatus(eventId, EventStatusEnum.DISABLED);
+    }
+
+    private Event changeEventStatus(Integer eventId, EventStatusEnum status) {
+        Event event = eventRepository.findById(eventId).orElse(null);
+        if (event == null) {
+            return null;
+        }
+        event.setStatus(status);
+        return eventRepository.save(event);
+    }
+
+
+    @Override
+    public void deleteUser(String userId) {
+        // NOTE: will fail with a FK constraint if the user has bookings/events.
+        // Consider soft-disabling (disableUser) instead, or delete child rows first.
+        userRepository.deleteById(userId);
+    }
+
+    // Soft alternative kept from previous version
+    @Override
+    public User disableUser(String userId) {
+        User user = userRepository.findById(userId).orElse(null);
         if (user != null) {
             user.setDisabled(true);
             return userRepository.save(user);

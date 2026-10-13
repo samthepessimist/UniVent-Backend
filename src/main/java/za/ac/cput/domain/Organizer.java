@@ -1,36 +1,35 @@
 package za.ac.cput.domain;
 
 import jakarta.persistence.Entity;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.util.List;
 
 /**Student name: Amanda Msutu
  * Student number: 222428600
  * Group: 3H
- * AdministratorFactory.java
+ * Organizer.java
  * Date: 05 July 2026
- * **/
+ **/
 
 @Entity
-@Table(name="Organizer")
-public class Organizer extends User{
+@Table(name = "organizer")
+public class Organizer extends User {
     private String organizationName;
     private String organizationType;
-    private String contactEmail;
-    @OneToMany(mappedBy = "organizer")
-    private List<Event> events;
+    private String organizationEmail;
 
     public Organizer() {
     }
 
-    public Organizer(Builder builder) {
-        //super(builder);
+    private Organizer(Builder builder) {
+        this.userId = builder.userId;
+        this.name = builder.name;
+        this.email = builder.email;
+        this.passwordHash = builder.passwordHash;
+        this.phoneNumber = builder.phoneNumber;
+        this.role = builder.role;
         this.organizationName = builder.organizationName;
         this.organizationType = builder.organizationType;
-        this.contactEmail = builder.contactEmail;
-        this.events = builder.events;
+        this.organizationEmail = builder.organizationEmail;
     }
 
     public String getOrganizationName() {
@@ -41,12 +40,8 @@ public class Organizer extends User{
         return organizationType;
     }
 
-    public String getContactEmail() {
-        return contactEmail;
-    }
-
-    public List<Event> getEvents() {
-        return events;
+    public String getOrganizationEmail() {
+        return organizationEmail;
     }
 
     @Override
@@ -54,11 +49,17 @@ public class Organizer extends User{
         return "Organizer{" +
                 "organizationName='" + organizationName + '\'' +
                 ", organizationType='" + organizationType + '\'' +
-                ", contactEmail='" + contactEmail + '\'' +
+                ", organizationEmail='" + organizationEmail + '\'' +
+                ", userId='" + userId + '\'' +
+                ", name='" + name + '\'' +
+                ", email='" + email + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", role=" + role +
+                ", disabled=" + disabled +
                 '}';
     }
 
-    public static class Builder{
+    public static class Builder {
         private String userId;
         private String name;
         private String email;
@@ -67,8 +68,7 @@ public class Organizer extends User{
         private RoleEnum role;
         private String organizationName;
         private String organizationType;
-        private String contactEmail;
-        private List<Event> events;
+        private String organizationEmail;
 
         public Builder setUserId(String userId) {
             this.userId = userId;
@@ -99,7 +99,7 @@ public class Organizer extends User{
             this.role = role;
             return this;
         }
-        
+
         public Builder setOrganizationName(String organizationName) {
             this.organizationName = organizationName;
             return this;
@@ -110,21 +110,12 @@ public class Organizer extends User{
             return this;
         }
 
-        public Builder setContactEmail(String contactEmail) {
-            this.contactEmail = contactEmail;
+        public Builder setOrganizationEmail(String organizationEmail) {
+            this.organizationEmail = organizationEmail;
             return this;
         }
-
-        public Builder setEvents(List<Event> events){
-            this.events = events;
-            return this;
-        }
-
 
         public Organizer build() {
-//            if (this.getUserId() == 0) {
-//                this.setUserId(UserIdGenerator.getInstance().generateId());
-//            }
             return new Organizer(this);
         }
     }
